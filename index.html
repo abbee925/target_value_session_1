@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<!-- ============================================================
+  SAMSUNG E&A — Earthwork & Foundation Target Value Design
+  Advance Construction Execution Team · Advance Construction Technology Group
+
+  HOW TO DEPLOY (GitHub Pages)
+  1. Upload this file to a GitHub repository as  index.html
+  2. Repo Settings -> Pages -> Source: main branch / root -> Save
+  3. Your game runs at  https://<username>.github.io/<repo>/
+
+  HOW TO ENABLE MULTI-TEAM SYNC (Supabase, free)
+  1. supabase.com -> New project
+  2. SQL Editor -> run:
+       create table teams (
+         slug text, session text, name text, score numeric,
+         duration numeric, cost int, people int, autoshare int,
+         strategy text, ts bigint, members text,
+         primary key (session, slug));
+       alter table teams enable row level security;
+       create policy "workshop read"   on teams for select using (true);
+       create policy "workshop write"  on teams for insert with check (true);
+       create policy "workshop update" on teams for update using (true);
+  3. Settings -> API: copy Project URL and anon/publishable key
+  4. Paste both into the CONFIG block ~15 lines below, save, re-upload.
+     The yellow warning banner becomes a green "sync is ON" banner.
+
+  Sessions: share  ...?session=your-code  (or use the in-app QR) so each
+  workshop keeps its own results board.
+============================================================ -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Samsung E&A — Earthwork & Foundation Target Value Design</title>
+<style>
+  :root{
+    --bg:#0a0d0a; --panel:#121a12; --panel2:#16241a; --border:#28402a;
+    --ink:#eaf4ea; --sub:#9db89f; --green:#39d353; --greenGlow:#8dff3a;
+    --orange:#f9922b; --amber:#e0a83c; --brown:#c08a4a; --blue:#5bb2ff;
+    --red:#ff6b5d; --yellow:#ffd23f; --navy:#5b8cff; --auto:#7bd8ff;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px}
+  .wrap{max-width:1240px;margin:0 auto}
+  h1{margin:0;font-size:24px}
+  .topbar{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+  .muted{color:var(--sub);font-size:13px}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .step{background:var(--brown);color:#0b0f0a;font-weight:800;font-size:11px;padding:3px 8px;border-radius:6px}
+  .rowhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0 10px}
+  .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .between{display:flex;justify-content:space-between;align-items:center}
+  .btn{padding:12px 20px;border-radius:10px;border:1px solid var(--border);cursor:pointer;font-weight:800;font-size:14px}
+  .btn.ghost{background:#1d3320;color:var(--ink)}
+  .btn.go{background:linear-gradient(90deg,#c08a4a,#e0a83c);color:#12090a;border:none}
+  .btn.blue{background:linear-gradient(90deg,#2f5fd0,#5b8cff);color:#fff;border:none}
+  .btn.sm{padding:8px 12px;font-size:12.5px}
+  .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+  .wp{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:14px}
+  .wphead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+  .wptitle{font-weight:900;font-size:17px}
+  .machines{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  @media(max-width:760px){.machines{grid-template-columns:1fr}}
+  .mach{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px;transition:.15s;position:relative}
+  .mach.on.man{border-color:var(--brown);box-shadow:0 0 0 1px #c08a4a55,0 0 20px #c08a4a1f}
+  .mach.on.aut{border-color:var(--auto);box-shadow:0 0 0 1px #7bd8ff55,0 0 20px #7bd8ff1f}
+  .mach .mh{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14.5px}
+  .box{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);flex:0 0 20px;
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:#0b0f0a}
+  .mach.on .box{background:var(--green);border-color:var(--green)}
+  .tag{font-size:9.5px;font-weight:900;letter-spacing:.6px;padding:2px 6px;border-radius:5px;margin-left:auto}
+  .tag.man{background:#3a2b16;color:var(--brown)} .tag.aut{background:#123243;color:var(--auto)}
+  .specs{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:11.5px;color:var(--sub)}
+  .specs b{color:var(--ink)}
+  .reqbox{background:#0c160d;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:9px}
+  .reqbox .cl{font-size:10px;letter-spacing:.4px;color:var(--sub)}
+  .reqbox .rr{font-size:12.5px;margin-top:3px}
+  .costline{margin-top:8px;font-size:12px;color:var(--sub)}
+  .costline b{color:var(--orange)}
+  .wpstat{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--sub)}
+  .wpstat b{color:var(--ink)}
+
+  .crewgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:12px}
+  .crewcard{background:var(--panel2);border:1px solid var(--border);border-radius:11px;padding:12px}
+  .crewcard.short{border-color:var(--red);box-shadow:0 0 0 1px #ff6b5d44}
+  .crewcard .n{font-weight:800;font-size:13.5px}
+  .crewcard .sub2{color:var(--sub);font-size:11px;margin-top:2px}
+  .stepper{display:flex;align-items:center;gap:9px;margin-top:9px}
+  .stepper button{width:36px;height:33px;border-radius:8px;border:1px solid var(--border);background:#1d3320;color:var(--ink);font-size:19px;cursor:pointer}
+  .stepper button:disabled{background:#0f1a10;color:#456347;cursor:not-allowed}
+  .stepper .q{min-width:30px;text-align:center;font-size:20px;font-weight:800}
+  .reqline{font-size:11.5px;margin-top:7px}
+
+  .stat{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .stat .sv{font-size:26px;font-weight:900}
+  .stat .sl{color:var(--sub);font-size:11px;letter-spacing:.4px;text-transform:uppercase}
+  .meter{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px}
+  .meter .top{display:flex;justify-content:space-between;align-items:baseline}
+  .meter .mv{font-size:22px;font-weight:800}
+  .bar{margin-top:8px;height:8px;border-radius:6px;background:#0c160d;position:relative}
+  .bar>span{display:block;height:100%;border-radius:6px;transition:.2s}
+  .bignum{font-size:64px;font-weight:900;line-height:1.05}
+  .stratbtn{padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:700;background:#17251a;color:var(--ink);border:1px solid var(--border)}
+  .stratbtn.on{background:var(--brown);color:#0b0f0a;border-color:var(--brown)}
+
+  .gantt{margin-top:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .ginner{min-width:560px}
+  .grow{display:flex;align-items:center;margin-top:9px}
+  .glabel{width:190px;flex:0 0 190px;font-size:12.5px;padding-right:10px}
+  .gtrack{position:relative;flex:1;height:34px;background:#0c160d;border-radius:6px;min-width:240px}
+  .gbar{position:absolute;height:14px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9.5px;font-weight:800;white-space:nowrap;overflow:hidden;transition:.2s}
+  .gbar.plan{top:3px;color:#0b0f0a}
+  .gbar.base{top:19px;background:#3d5240;color:#c9d8ca}
+  .ggrid{position:absolute;top:0;bottom:0;width:1px;background:#ffffff0d}
+  .gtick{position:absolute;top:3px;font-size:10px;color:var(--sub);transform:translateX(-50%)}
+  .glimit{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--red);z-index:5}
+  .glimit b{position:absolute;top:-16px;left:3px;font-size:9px;color:var(--red);white-space:nowrap}
+  @media(max-width:600px){.glabel{width:118px;flex:0 0 118px;font-size:11px}}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--sub)}
+  .legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+
+  .brandbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px;margin-bottom:16px;border-radius:14px;background:linear-gradient(90deg,#0a1747,#0d1c1a 70%);border:1px solid #1c356b}
+  .brandmark{font-weight:900;letter-spacing:1.2px;font-size:26px;color:#fff}
+  .brandmark span{color:var(--navy)}
+  .brandteams{text-align:right;line-height:1.5}
+  .brandteams .t1{font-weight:800;font-size:14px}
+  .brandteams .t2{color:var(--sub);font-size:12.5px}
+  .footer{margin:24px 0 8px;padding-top:16px;border-top:1px solid var(--border);text-align:center;color:var(--sub);font-size:12.5px;line-height:1.7}
+  .footer b{color:var(--navy)}
+  .roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+  .role{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:14px;border-top:3px solid var(--brown)}
+  .role .rn{font-weight:800;font-size:14.5px}
+  .role .who{color:var(--sub);font-size:11px;margin:3px 0 8px;letter-spacing:.4px;text-transform:uppercase}
+  .role ul{margin:0;padding-left:16px;color:var(--sub);font-size:12.5px;line-height:1.7}
+  .role input{width:100%;margin-top:8px;padding:8px 10px;border-radius:7px;border:1px solid var(--border);background:#0c160d;color:var(--ink);font-size:13px}
+  .memsel{width:100%;margin-top:8px;padding:9px 10px;border-radius:7px;border:1px solid var(--border);
+    background:#0c160d;color:var(--ink);font-size:13px;cursor:pointer}
+  .memsel.filled{border-color:var(--blue);color:var(--ink)}
+  .exrow{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .exrow select{flex:1;min-width:150px;padding:9px 10px;border-radius:7px;border:1px solid var(--border);background:#0c160d;color:var(--ink);font-size:13px}
+  .exrow .xbtn{background:#2a1414;border:1px solid #5c2a2a;color:#ff9d94;border-radius:7px;padding:8px 11px;cursor:pointer;font-weight:800}
+  .exrow .exrole{flex:0 0 auto;color:var(--sub);font-size:12px}
+  .gate{max-width:560px;margin:40px auto;text-align:center}
+  .gate input{width:100%;padding:14px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:#0c160d;color:var(--ink);margin-top:14px}
+  .joinbox{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);text-align:left}
+  .sessrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .sessrow input{margin-top:0;flex:1;min-width:140px;padding:10px 12px;font-size:14px}
+  .qrwrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px}
+  .qrcard{background:#fff;padding:14px;border-radius:14px}
+  .qrhint{font-size:12px;color:var(--sub);text-align:center;line-height:1.6}
+  .tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
+  .tab{padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:800;font-size:13.5px;background:#17251a;color:var(--sub);border:1px solid var(--border)}
+  .tab.on{background:var(--navy);color:#06122e;border-color:var(--navy)}
+  .banner{padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:14px;background:#2a2410;border:1px solid #5c4a12;color:#ffd98a}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border)}
+  th{color:var(--sub);font-size:11px;letter-spacing:.4px;text-transform:uppercase}
+  tr.you{background:#1a2a1c}
+  .rank{font-weight:800;color:var(--brown)}
+  .insights li{margin:5px 0;line-height:1.5}
+  .ok-i{color:var(--green)} .warn-i{color:var(--yellow)} .bad-i{color:var(--red)}
+  .hide{display:none}
+
+  /* ===== Two-column layout with sticky live panel ===== */
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:18px;align-items:start;margin-top:20px}
+  .col-main{min-width:0}
+  .col-side{position:sticky;top:12px;max-height:calc(100vh - 300px);overflow-y:auto;padding-right:4px}
+  .col-side::-webkit-scrollbar{width:8px}
+  .col-side::-webkit-scrollbar-track{background:transparent}
+  .col-side::-webkit-scrollbar-thumb{background:#28402a;border-radius:6px}
+  .sidetag{font-size:10.5px;letter-spacing:.6px;color:var(--greenGlow);font-weight:800;margin-bottom:8px}
+  .sidehead{font-weight:800;font-size:12.5px;letter-spacing:.4px;margin:16px 0 8px}
+  .col-side .grid4{grid-template-columns:1fr 1fr;gap:10px}
+  .col-side .bignum{font-size:44px}
+  .col-side .stat{padding:11px}
+  .col-side .stat .sv{font-size:20px}
+  .col-side .meter{padding:10px}
+  .col-side .meter .mv{font-size:18px}
+  .col-side .btn{padding:11px 14px;font-size:13px}
+
+  /* ===== Roles forced to one row ===== */
+  .roles{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .role{padding:12px}
+  .role .rn{font-size:13.5px}
+  .role ul{font-size:11.5px;line-height:1.6;padding-left:15px}
+  @media(max-width:820px){.roles{grid-template-columns:1fr}}
+
+  /* ===== Compact baseline rows (no tile gaps) ===== */
+  .bline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 0;
+    border-bottom:1px dashed #2b3d2d;font-size:13px}
+  .bline:last-child{border-bottom:none}
+  .bkey{min-width:132px;color:var(--sub);font-size:11.5px;letter-spacing:.3px;text-transform:uppercase;font-weight:700}
+  .chip{background:#0c160d;border:1px solid var(--border);border-radius:7px;padding:4px 9px;font-size:12.5px}
+  .chip b{color:var(--ink)}
+  .chip.tot{background:#1d2a1f;border-color:#3d5240}
+  .chip.tgt{background:#2a2410;border-color:#5c4a12;color:#ffd98a}
+  .chip.tgt b{color:#ffd98a}
+
+  /* ===== Productivity comparison ===== */
+  .lpwrap{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+  .lpbig{font-size:30px;font-weight:900;color:var(--greenGlow);line-height:1}
+  .lpmul{background:#1d2a1f;border:1px solid #3d5240;border-radius:8px;padding:5px 10px;
+    font-weight:900;font-size:14px;color:var(--greenGlow)}
+  .cmp{margin-top:6px}
+  .cmprow{margin-top:9px}
+  .cmplab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub);margin-bottom:3px}
+  .cmplab b{color:var(--ink)}
+  .cmpbars{position:relative;height:20px}
+  .cmpb{position:absolute;left:0;height:8px;border-radius:4px;transition:.25s}
+  .cmpb.base{top:0;background:#3d5240}
+  .cmpb.now{top:11px}
+  .delta{font-weight:800}
+
+  /* ===== Fixed bottom Gantt dock ===== */
+  .ganttdock{position:fixed;left:0;right:0;bottom:0;z-index:800;
+    background:rgba(10,13,10,.97);border-top:1px solid var(--border);
+    padding:8px 14px 12px;max-height:44vh;overflow:auto;box-shadow:0 -8px 26px rgba(0,0,0,.55)}
+  .dockhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .docktitle{color:var(--greenGlow);font-weight:800;font-size:12.5px;letter-spacing:.4px}
+  .dockbtn{margin-left:auto;background:#1d3320;color:var(--ink);border:1px solid var(--border);
+    border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer}
+  .ganttdock.collapsed .dockbody{display:none}
+  .ganttdock.collapsed{max-height:none;padding-bottom:8px}
+  body{padding-bottom:270px}
+
+  /* ===== Mobile ===== */
+  .minibar{display:none}
+  @media(max-width:1180px){
+    .layout{grid-template-columns:1fr}
+    .col-side{position:static;max-height:none;overflow:visible;margin-top:20px}
+    .ganttdock{bottom:64px;max-height:40vh}
+    .minibar{display:flex;position:fixed;left:8px;right:8px;bottom:8px;z-index:900;
+      background:rgba(15,26,16,.96);border:1px solid var(--border);border-radius:12px;
+      padding:9px 12px;gap:10px;justify-content:space-between;align-items:center;
+      box-shadow:0 6px 24px rgba(0,0,0,.5)}
+    .minibar.hide{display:none}
+    .minibar .mb{text-align:center;line-height:1.25}
+    .minibar .mbl{font-size:9px;letter-spacing:.4px;color:var(--sub);text-transform:uppercase}
+    .minibar .mbv{font-size:16px;font-weight:900}
+    body{padding-bottom:300px}
+  }
+  @media(max-width:640px){
+    body{padding:10px;padding-bottom:290px} h1{font-size:20px} .panel,.wp{padding:13px}
+    .brandmark{font-size:22px} .brandteams{text-align:left} .bignum{font-size:48px}
+    .bkey{min-width:100%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brandbar">
+    <div class="brandmark">SAMSUNG <span>E&amp;A</span></div>
+    <div class="brandteams">
+      <div class="t1">Advance Construction Execution Team</div>
+      <div class="t2">Advance Construction Technology Group</div>
+    </div>
+  </div>
+
+  <div id="gate" class="gate">
+    <div class="panel">
+      <h1 style="margin-bottom:6px">⛏️ Earthwork &amp; Foundation</h1>
+      <div class="muted">Target Value Design — team challenge</div>
+      <div style="margin-top:20px;text-align:left">
+        <div style="font-weight:800;font-size:13px;color:var(--amber)">ENTER YOUR TEAM NAME</div>
+        <div class="muted" style="margin-top:4px">Teams of 3. Your result appears on the shared results board.</div>
+        <input id="teamInput" placeholder="e.g. Team Alpha" maxlength="28" onkeydown="if(event.key==='Enter')joinTeam()" />
+        <div id="gateErr" class="muted" style="color:var(--red);margin-top:8px;min-height:16px"></div>
+      </div>
+      <div class="actions" style="justify-content:center">
+        <button class="btn go" onclick="joinTeam()">Start Planning →</button>
+        <button class="btn ghost" onclick="showBoardOnly()">View Results Board</button>
+      </div>
+
+      <div class="joinbox">
+        <div style="font-weight:800;font-size:13px;color:var(--navy)">📱 SCAN TO JOIN — SESSION</div>
+        <div class="muted" style="margin-top:4px">Everyone using the same session code shares one results board.</div>
+        <div class="sessrow">
+          <input id="sessInput" placeholder="workshop" maxlength="20" onchange="setSession()" onkeydown="if(event.key==='Enter')setSession()" />
+          <button class="btn ghost sm" onclick="setSession()">Set</button>
+          <button class="btn blue sm" onclick="toggleGateQR()" id="qrToggle">Show join QR</button>
+        </div>
+        <div id="gateQR" class="qrwrap hide"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app" class="hide">
+    <div class="topbar">
+      <h1>⛏️ Earthwork &amp; Foundation of the Future</h1>
+      <div class="muted">Team: <b id="teamBadge" style="color:var(--navy)"></b></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab on" id="tabPlay" onclick="showTab('play')">🛠️ Plan &amp; Play</div>
+      <div class="tab" id="tabBoard" onclick="showTab('board')">🏆 Results Board</div>
+    </div>
+    <div id="storeBanner"></div>
+    <div id="miniBar" class="minibar hide"></div>
+
+    <div id="viewPlay">
+     <div class="layout">
+
+      <!-- ============ LEFT: CONTROLS ============ -->
+      <div class="col-main">
+
+      <div class="panel">
+        <div class="rowhead" style="margin:0 0 4px"><span class="step">TEAM</span><strong>YOUR TEAM — 3 ROLES</strong>
+          <span class="muted" style="margin-left:auto">Pick each member from the roster, or add someone new.</span></div>
+        <div class="roles">
+          <div class="role"><div class="rn">🧭 Execution Lead</div><div class="who">Member 1 · Site Planner</div>
+            <ul><li>Select machines per work package.</li><li>Own the schedule.</li></ul>
+            <select class="memsel" id="mem0" onchange="onMemberPick(0)"></select></div>
+          <div class="role"><div class="rn">💰 Cost &amp; Resource Controller</div><div class="who">Member 2 · Commercial</div>
+            <ul><li>Hire crew, keep within budget.</li><li>Don't over-hire — idle crew wastes credits.</li></ul>
+            <select class="memsel" id="mem1" onchange="onMemberPick(1)"></select></div>
+          <div class="role"><div class="rn">🛡️ Technology &amp; Safety Lead</div><div class="who">Member 3 · Automation &amp; HSE</div>
+            <ul><li>Clear the resource check.</li><li>Push productivity, safety, effort reduction.</li></ul>
+            <select class="memsel" id="mem2" onchange="onMemberPick(2)"></select></div>
+        </div>
+        <div id="extraMembers"></div>
+        <div style="margin-top:10px"><button class="btn ghost sm" onclick="addMemberRow()">+ Add another member</button></div>
+      </div>
+
+      <div class="panel" style="margin-top:20px;border-color:#5c4a12">
+        <div style="color:var(--amber);font-weight:800;font-size:13px;margin-bottom:2px">📋 BASELINE PLAN vs 🎯 CLIENT TARGET</div>
+        <div class="muted" style="margin-bottom:6px">How this job would normally be built — and what the client now demands.</div>
+
+        <div class="bline"><span class="bkey">Baseline schedule</span>
+          <span class="chip">Excavation <b>20 d</b></span>
+          <span class="chip">Foundation <b>25 d</b></span>
+          <span class="chip">Concrete <b>15 d</b></span>
+          <span class="chip">Steel <b>9.1 d</b></span>
+          <span class="chip tot">Total <b>69.1 d</b></span>
+        </div>
+
+        <div class="bline"><span class="bkey">Baseline cost</span>
+          <span class="chip">Cost <b>380 cr</b></span>
+          <span class="chip">Crew <b>15</b></span>
+          <span class="chip">Labour productivity <b>2.46 units/person-day</b></span>
+          <span class="chip tot">Value <b>44.4</b></span>
+        </div>
+
+        <div class="bline"><span class="bkey">🎯 Client target</span>
+          <span class="chip tgt">Finish by <b>50 d</b></span>
+          <span class="chip tgt">Budget <b>650 cr</b></span>
+          <span class="chip tgt">Crew available <b>36</b></span>
+        </div>
+
+        <div class="bline"><span class="bkey">Gap to close</span>
+          <span style="color:var(--amber);font-weight:800">19.1 days</span>
+          <span class="muted" style="font-size:12px">— in Target Value Design the target is set first, and the design is changed to meet it. Many mixes reach 50 days — even extra manual gangs can — but only one is optimal. Full automation needs 6 technicians (only 4 on site), so it cannot run.</span>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:20px">
+        <div class="rowhead" style="margin:0 0 10px"><span class="step">STEP 1</span><strong>CLIENT PRIORITY</strong>
+          <span class="muted">Weights Productivity / Safety / Effort reduction.</span></div>
+        <div id="strat" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="rowhead">
+        <span class="step">STEP 2</span><strong>SELECT MACHINES</strong>
+        <span class="muted" id="pools" style="margin-left:auto"></span>
+      </div>
+      <div class="muted" style="margin-top:-4px">Choose up to 3 units of each machine — more units work in parallel within a stage. Every package needs at least one. Stages run in sequence.</div>
+      <div id="packages"></div>
+
+      <div class="panel" style="margin-top:20px">
+        <div class="rowhead" style="margin:0 0 6px"><span class="step">STEP 3</span><strong>HIRE SITE CREW</strong>
+          <button class="btn go sm" style="margin-left:auto" onclick="autoHire()">Auto-hire exactly what's required</button></div>
+        <div class="muted">Machines cannot run without their crew. Hire at least the required number of each role — but every extra person costs credits.</div>
+        <div class="crewgrid" id="crewgrid"></div>
+        <div id="resCheck" style="margin-top:14px;padding:12px;border-radius:10px;border:1px solid var(--border)"></div>
+      </div>
+
+      <div class="panel" style="margin-top:20px">
+        <div style="color:var(--blue);font-weight:800;font-size:13px;margin-bottom:4px">📅 STAGE SCHEDULE — BASELINE vs YOUR PLAN</div>
+        <div class="muted">Days per stage. Negative variance means you pulled that stage in against the baseline.</div>
+        <div style="overflow-x:auto"><table id="stageTable"></table></div>
+      </div>
+
+      </div><!-- /col-main -->
+
+      <!-- ============ RIGHT: STICKY LIVE PANEL ============ -->
+      <aside class="col-side">
+        <div class="sidetag">⚡ LIVE — updates as you change the plan</div>
+
+        <div class="panel" id="finalCard">
+          <div style="color:var(--sub);font-weight:800;font-size:13px;letter-spacing:.5px">FINAL VALUE SCORE</div>
+          <div class="bignum" id="finalVal">–</div>
+          <div class="muted" id="finalBreak" style="margin-bottom:12px"></div>
+          <div class="grid4" id="subscores"></div>
+          <div id="vsBaseline" class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"></div>
+          <div class="actions">
+            <button class="btn go" onclick="submitPlan()">Confirm &amp; Submit Plan</button>
+            <button class="btn ghost" onclick="resetPlan()">Reset Plan</button>
+          </div>
+          <div id="submitMsg" class="muted" style="margin-top:10px"></div>
+        </div>
+
+        <div class="grid4" style="margin-top:14px">
+          <div class="stat"><div class="sl">Duration</div><div class="sv" id="sDur">–</div></div>
+          <div class="stat"><div class="sl">Credits</div><div class="sv" id="sCost">–</div></div>
+          <div class="stat"><div class="sl">Crew Hired</div><div class="sv" id="sPeople">–</div></div>
+          <div class="stat"><div class="sl">Automation</div><div class="sv" id="sAuto">–</div></div>
+        </div>
+
+        <div class="sidehead" style="color:var(--brown)">LIVE PERFORMANCE DASHBOARD</div>
+        <div class="grid4" id="meters"></div>
+
+        <div class="panel" style="margin-top:14px">
+          <div style="color:var(--auto);font-weight:800;font-size:13px;margin-bottom:2px">📈 PRODUCTIVITY — BASELINE vs YOUR PLAN</div>
+          <div class="muted" style="font-size:11.5px">Labour productivity = total workload (m³ + t) ÷ (days × crew).</div>
+          <div class="lpwrap">
+            <div>
+              <div class="muted" style="font-size:10.5px">BASELINE</div>
+              <div style="font-size:20px;font-weight:800;color:var(--sub)">2.46</div>
+            </div>
+            <div style="color:var(--sub);font-size:20px">→</div>
+            <div>
+              <div class="muted" style="font-size:10.5px">YOUR PLAN</div>
+              <div class="lpbig" id="lpNow">–</div>
+            </div>
+            <div class="lpmul" id="lpMul">–</div>
+            <div class="muted" style="font-size:10.5px;flex:1;min-width:90px">units per<br>person-day</div>
+          </div>
+          <div class="cmp" id="cmpBars"></div>
+        </div>
+
+        <div class="panel" style="margin-top:14px">
+          <div style="color:var(--navy);font-weight:800;font-size:13px;margin-bottom:2px">📐 COST–TIME INDEX (SPI × CPI)</div>
+          <div class="muted" style="font-size:11.5px">SPI = baseline days ÷ your days · CPI = baseline cost ÷ your cost · above 1.00 beats the baseline overall.</div>
+          <div class="grid4" style="margin-top:10px">
+            <div class="stat"><div class="sl">SPI — schedule</div><div class="sv" id="spiV">–</div></div>
+            <div class="stat"><div class="sl">CPI — cost</div><div class="sv" id="cpiV">–</div></div>
+          </div>
+          <div class="lpwrap" style="margin-top:10px">
+            <div><div class="muted" style="font-size:10.5px">COST–TIME INDEX</div><div class="lpbig" id="ctiV">–</div></div>
+            <div class="muted" style="font-size:11px;flex:1;min-width:120px" id="ctiNote"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:14px">
+          <div style="color:var(--amber);font-weight:800;font-size:13px;margin-bottom:4px">PLAN INSIGHTS</div>
+          <ul class="insights" id="insights" style="margin:10px 0 0;padding-left:18px;font-size:12.5px"></ul>
+        </div>
+      </aside>
+
+     </div><!-- /layout -->
+    </div>
+
+    <!-- ============ FIXED BOTTOM GANTT DOCK ============ -->
+    <div class="ganttdock hide" id="ganttDock">
+      <div class="dockhead">
+        <span class="docktitle">📊 PROJECT SCHEDULE — GANTT</span>
+        <span class="legend" style="margin:0">
+          <span><i style="background:var(--brown)"></i>Your plan</span>
+          <span><i style="background:#3d5240"></i>Baseline (69.1 d)</span>
+          <span><i style="background:var(--red);width:3px"></i>50-day target</span>
+        </span>
+        <button class="dockbtn" id="dockBtn" onclick="toggleDock()">▾ Hide</button>
+      </div>
+      <div class="dockbody">
+        <div class="gantt" id="gantt"></div>
+      </div>
+    </div>
+
+    <div id="viewBoard" class="hide">
+      <div class="panel">
+        <div class="between" style="flex-wrap:wrap;gap:10px">
+          <div><div style="color:var(--greenGlow);font-weight:800;font-size:13px">🏆 LIVE RESULTS BOARD</div>
+            <div class="muted">All submitted team plans.</div></div>
+          <button class="btn blue" onclick="loadBoard()">↻ Refresh</button>
+        </div>
+        <div class="grid4" style="margin-top:14px">
+          <div class="stat"><div class="sl">Teams submitted</div><div class="sv" id="stTeams" style="color:var(--navy)">–</div></div>
+          <div class="stat"><div class="sl">Best value</div><div class="sv" id="stBest" style="color:var(--greenGlow)">–</div></div>
+          <div class="stat"><div class="sl">Average value</div><div class="sv" id="stAvg" style="color:var(--amber)">–</div></div>
+          <div class="stat"><div class="sl">Beat baseline (44.4)</div><div class="sv" id="stBeat" style="color:var(--green)">–</div></div>
+        </div>
+        <div style="overflow-x:auto"><table id="board"></table></div>
+        <div id="boardMsg" class="muted" style="margin-top:10px"></div>
+      </div>
+
+      <div class="panel" style="margin-top:20px">
+        <div style="color:var(--navy);font-weight:800;font-size:13px;margin-bottom:4px">SHARE — LINK &amp; QR</div>
+        <div class="muted">Paste this page's URL and generate a QR for teams to scan.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <input id="qrurl" placeholder="https://…" style="flex:1;min-width:200px;padding:11px 12px;border-radius:8px;border:1px solid var(--border);background:#0c160d;color:var(--ink);font-size:14px" />
+          <button class="btn go" onclick="makeQR()">Generate QR</button>
+        </div>
+        <div id="qrbox" style="margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <b>Samsung E&amp;A</b> · Advance Construction Execution Team · Advance Construction Technology Group<br>
+    Earthwork &amp; Foundation Target Value Design tool
+  </div>
+</div>
+
+<noscript><div style="padding:16px;background:#3a0f10;color:#ffd7d3;border-radius:10px;margin:16px">
+  JavaScript is disabled — this game needs it to run.</div></noscript>
+
+<script>
+/* Surface any startup error on-screen instead of failing to a blank page */
+window.addEventListener("error", function(e){
+  var d=document.getElementById("bootErr");
+  if(!d){ d=document.createElement("div"); d.id="bootErr";
+    d.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;background:#3a0f10;"+
+      "color:#ffd7d3;border:1px solid #ff6b5d;border-radius:10px;padding:10px 12px;"+
+      "font:12px/1.5 system-ui;white-space:pre-wrap";
+    (document.body||document.documentElement).appendChild(d); }
+  d.textContent="Startup error: "+(e.message||e)+"  (line "+(e.lineno||"?")+")";
+});
+</script>
+<script>
+/* ================== CONFIG — EDIT THESE TWO LINES ==================
+   Paste your Supabase Project URL and anon/publishable key here to
+   sync all teams onto one live results board. Leave empty for
+   device-only mode. Full setup steps are at the top of this file. */
+window.TVD_CONFIG = {
+  SUPABASE_URL: "",   // e.g. "https://abcdefgh.supabase.co"
+  SUPABASE_KEY: ""    // anon / publishable key (safe to expose with RLS on)
+};
+/* =================================================================== */
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="window.__noQR=1"></script>
+<script>
+/* Multi-team sync — configure in the CONFIG block near the top of this file. */
+const SUPABASE_URL = (window.TVD_CONFIG||{}).SUPABASE_URL || "";
+const SUPABASE_KEY = (window.TVD_CONFIG||{}).SUPABASE_KEY || "";
+const SB_ON = SUPABASE_URL.startsWith("http") && SUPABASE_KEY.length > 10;
+
+const STORE = (typeof window!=="undefined" && window.storage && typeof window.storage.set==="function") ? window.storage : null;
+let memStore={}, storeMode = SB_ON ? "supabase" : "memory";
+
+function getParam(n){ try{ return new URLSearchParams(location.search).get(n); }catch(e){ return null; } }
+function slugifyCode(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,20); }
+let session = slugifyCode(getParam("session")) || "workshop";
+const prefix = () => "team:"+session+":";
+
+function joinUrl(){
+  if(!location.href.startsWith("http")) return null;
+  try{ const u=new URL(location.href); u.searchParams.set("session",session); u.hash=""; return u.toString(); }
+  catch(e){ return null; }
+}
+
+async function sbFetch(path, opts){
+  const r = await fetch(SUPABASE_URL+"/rest/v1/"+path, Object.assign({
+    headers: Object.assign({
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer "+SUPABASE_KEY,
+      "Content-Type": "application/json"
+    }, (opts&&opts.headers)||{})
+  }, opts));
+  if(!r.ok) throw new Error("Supabase "+r.status);
+  return r;
+}
+
+async function saveTeam(rec){
+  if(SB_ON){
+    try{
+      // upsert on (session, slug)
+      await sbFetch("teams?on_conflict=session,slug", {
+        method:"POST",
+        headers:{ "Prefer":"resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({ slug:rec.slug, session:session, name:rec.name, score:rec.score,
+          duration:rec.duration, cost:rec.cost, people:rec.people, autoshare:rec.autoshare,
+          strategy:rec.strategy, ts:rec.ts, members:rec.members||"" })
+      });
+      storeMode="supabase"; return "supabase";
+    }catch(e){ /* fall through to local */ }
+  }
+  const key=prefix()+rec.slug, val=JSON.stringify(rec);
+  if(STORE){
+    try{ await STORE.set(key,val,true); storeMode="shared"; return "shared"; }catch(e){}
+    try{ await STORE.set(key,val,false); storeMode="private"; return "private"; }catch(e){}
+  }
+  memStore[key]=val; storeMode="memory"; return "memory";
+}
+
+async function loadAll(){
+  if(SB_ON){
+    try{
+      const r=await sbFetch("teams?select=*&session=eq."+encodeURIComponent(session)+"&order=score.desc");
+      const data=await r.json();
+      storeMode="supabase";
+      return data.map(d=>({slug:d.slug,name:d.name,score:+d.score,duration:+d.duration,
+        cost:d.cost,people:d.people,autoshare:d.autoshare,strategy:d.strategy,ts:d.ts,members:d.members||""}));
+    }catch(e){ /* fall through */ }
+  }
+  const out=[], p=prefix();
+  if(STORE){
+    for(const shared of [true,false]){
+      try{
+        const res=await STORE.list(p,shared);
+        const keys=(res&&res.keys)?res.keys:[];
+        for(const k of keys){
+          try{ const v=await STORE.get(k,shared); if(v&&v.value){const o=JSON.parse(v.value); if(!out.some(x=>x.slug===o.slug)) out.push(o);} }catch(e){}
+        }
+      }catch(e){}
+    }
+  }
+  for(const k in memStore){ if(!k.startsWith(p))continue;
+    try{const o=JSON.parse(memStore[k]); if(!out.some(x=>x.slug===o.slug)) out.push(o);}catch(e){} }
+  return out;
+}
+
+/* ===== TEAM ROSTER — Advance Construction Execution Team ===== */
+const ROSTER=[
+ {en:"HyunSeuk Choi",   ko:"최현석",       pos:"Team Leader",  nick:""},
+ {en:"Gangsu Lee",      ko:"이강수",       pos:"Group Leader", nick:""},
+ {en:"Changwoo Lee",    ko:"이창우",       pos:"Group Leader", nick:""},
+ {en:"Tae Sang Song",   ko:"송태상",       pos:"Group Leader", nick:"SONG"},
+ {en:"YoungGyu Lee",    ko:"이영규",       pos:"Pro",          nick:"YoungQ"},
+ {en:"Yongjin Lee",     ko:"이용진",       pos:"Pro",          nick:""},
+ {en:"HyunJin Jang",    ko:"장현진",       pos:"Pro",          nick:""},
+ {en:"Sang A Cha",      ko:"차상아",       pos:"Pro",          nick:""},
+ {en:"Sunghyun Bae",    ko:"배성현",       pos:"Pro",          nick:""},
+ {en:"Dr. Abubakar Sharafat", ko:"아부바카르 사라파트", pos:"Pro", nick:""},
+ {en:"Jeongyeon Ham",   ko:"함정연",       pos:"Pro",          nick:""},
+ {en:"Ryunyoung Koh",   ko:"고륜영",       pos:"Pro",          nick:"Esther"},
+ {en:"Kwangbae Kim",    ko:"김광배",       pos:"Pro",          nick:"깨비 (Kkaebi)"},
+ {en:"Jaehoon Kim",     ko:"김재훈",       pos:"Pro",          nick:""},
+ {en:"JongSung Kim",    ko:"김종성",       pos:"Pro",          nick:""},
+];
+function rosterLabel(p){ return p.en + (p.nick?` (${p.nick})`:"") + " · " + p.ko; }
+let extraMembers=[];   // custom names added at runtime
+function allMembers(){ return ROSTER.map(rosterLabel).concat(extraMembers); }
+
+let roleMembers=["","",""];   // chosen for the 3 core roles
+let extraPicks=[];            // {name} chosen in additional rows
+
+function memberOptions(selected){
+  const opts=['<option value="">— select member —</option>'];
+  allMembers().forEach(n=>{ opts.push(`<option value="${n.replace(/"/g,'&quot;')}"${n===selected?" selected":""}>${n}</option>`); });
+  opts.push('<option value="__add__">➕ Add someone new…</option>');
+  return opts.join("");
+}
+function refreshMemberSelects(){
+  for(let i=0;i<3;i++){ const el=$("mem"+i); if(!el)continue;
+    el.innerHTML=memberOptions(roleMembers[i]);
+    el.classList.toggle("filled", !!roleMembers[i]); }
+  renderExtraRows();
+}
+function onMemberPick(i){
+  const el=$("mem"+i), v=el.value;
+  if(v==="__add__"){
+    const name=(prompt("Add a member — type their name:")||"").trim();
+    if(name && !allMembers().includes(name)) extraMembers.push(name);
+    roleMembers[i]= name || "";
+  }else{ roleMembers[i]=v; }
+  refreshMemberSelects();
+}
+function addMemberRow(){ extraPicks.push(""); renderExtraRows(); }
+function removeExtra(idx){ extraPicks.splice(idx,1); renderExtraRows(); }
+function onExtraPick(idx){
+  const el=$("ex"+idx), v=el.value;
+  if(v==="__add__"){
+    const name=(prompt("Add a member — type their name:")||"").trim();
+    if(name && !allMembers().includes(name)) extraMembers.push(name);
+    extraPicks[idx]= name || "";
+  }else{ extraPicks[idx]=v; }
+  renderExtraRows();
+}
+function renderExtraRows(){
+  const box=$("extraMembers"); if(!box)return;
+  box.innerHTML=extraPicks.map((sel,idx)=>`<div class="exrow">
+    <span class="exrole">Member ${idx+4}</span>
+    <select id="ex${idx}" onchange="onExtraPick(${idx})">${memberOptions(sel)}</select>
+    <button class="xbtn" onclick="removeExtra(${idx})" title="Remove">✕</button>
+  </div>`).join("");
+}
+function teamMembers(){
+  return roleMembers.filter(Boolean).concat(extraPicks.filter(Boolean));
+}
+
+/* ===== GAME DATA ===== */
+
+/* ===== CREW MARKET ===== */
+const CREW={
+  Operator:{cost:20,max:4,note:"Runs manual plant"},
+  Surveyor:{cost:15,max:6,note:"Setting out & levels"},
+  Laborer:{cost:10,max:8,note:"Placing & finishing"},
+  Technician:{cost:30,max:4,note:"Supervises autonomous plant"},
+  Foreman:{cost:25,max:2,note:"Leads foundation gang"},
+  "Foundation Crew":{cost:12,max:8,note:"Formwork & rebar"},
+  Ironworker:{cost:18,max:4,note:"Steel fixing & bolting"},
+};
+const ROLES=Object.keys(CREW);
+
+/* ===== WORK PACKAGES — one unit of each machine ===== */
+const PACKAGES=[
+ {key:"exc",name:"Excavation",icon:"⛏️",workload:1200,unit:"m³",desc:"Bulk earthmoving and trenching.",
+  machines:[
+   {key:"exc_m",type:"man",name:"Manual Excavator",rate:60,cost:40,req:{Operator:1,Surveyor:2},p:45,s:50,e:20,note:"Operator digs; two surveyors set out and check levels."},
+   {key:"exc_a",type:"aut",name:"Autonomous Excavator",rate:110,cost:120,req:{Technician:1},p:85,s:88,e:90,note:"GNSS-guided, self-grading. One technician supervises."},
+  ]},
+ {key:"fnd",name:"Foundation Work",icon:"🏗️",workload:450,unit:"m³",desc:"Piling, formwork and rebar.",
+  machines:[
+   {key:"fnd_m",type:"man",name:"Manual Foundation Gang",rate:18,cost:25,req:{Foreman:1,"Foundation Crew":3},p:48,s:52,e:22,note:"Hand-set formwork and rebar fixing."},
+   {key:"fnd_a",type:"aut",name:"Automated Piling Rig",rate:45,cost:150,req:{Technician:2},p:90,s:80,e:95,note:"Automated pile driving and placement."},
+  ]},
+ {key:"con",name:"Concrete Pouring",icon:"🧱",workload:600,unit:"m³",desc:"Placement, vibration and finishing.",
+  machines:[
+   {key:"con_m",type:"man",name:"Manual Pouring Crew",rate:40,cost:35,req:{Operator:1,Laborer:3},p:50,s:55,e:25,note:"Pump operator plus three placing and finishing."},
+   {key:"con_a",type:"aut",name:"Autonomous Concrete Pouring",rate:75,cost:160,req:{Technician:1},p:88,s:85,e:92,note:"Robotic placement boom with automated screeding. Premium plant — high hire cost."},
+  ]},
+ {key:"stl",name:"Steel Erection",icon:"🔩",workload:300,unit:"t",desc:"Structural steel columns and beams after concrete.",
+  machines:[
+   {key:"stl_m",type:"man",name:"Manual Steel Erection Crew",rate:33,cost:45,req:{Operator:1,Ironworker:3},p:52,s:50,e:24,note:"Mobile crane operator with an ironworker gang bolting up."},
+   {key:"stl_a",type:"aut",name:"Robotic Steel Erection",rate:60,cost:170,req:{Technician:2},p:87,s:84,e:91,note:"Automated crane placement with robotic bolting. Premium plant."},
+  ]},
+];
+const MACH={}; PACKAGES.forEach(p=>p.machines.forEach(m=>{m.pkg=p.key;MACH[m.key]=m;}));
+
+const STRATS={"Cost & Safety":{p:.30,s:.45,e:.25},"Balanced":{p:.34,s:.33,e:.33},"Speed & Automation":{p:.40,s:.25,e:.35}};
+const BUDGET=650, DEADLINE=50;
+const BASE={duration:69.1,cost:380,people:15,score:44.4,dur:{exc:20,fnd:25,con:15,stl:9.1},
+  prod:48.2,safety:51.6,effort:22.4,labour:2.46};
+const TOTAL_WORKLOAD=1200+450+600+300;
+
+const MAXQ=3;
+let mq={exc_m:0,exc_a:0,fnd_m:0,fnd_a:0,con_m:0,con_a:0,stl_m:0,stl_a:0};
+let hire={}; ROLES.forEach(r=>hire[r]=0);
+let strategy="Balanced";
+let teamName="",teamSlug="";
+
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const $=id=>document.getElementById(id);
+const slugify=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40);
+
+/* ===== ENGINE (no penalties) ===== */
+function compute(){
+ const pkg={}; PACKAGES.forEach(p=>{
+   let cap=0,mcost=0; p.machines.forEach(m=>{ const q=mq[m.key]; if(q){cap+=m.rate*q;mcost+=m.cost*q;} });
+   pkg[p.key]={cap,mcost,duration:cap>0?+(p.workload/cap).toFixed(1):null};
+ });
+ const complete=PACKAGES.every(p=>pkg[p.key].cap>0);
+
+ const req={}; ROLES.forEach(r=>req[r]=0);
+ Object.values(MACH).forEach(m=>{ const q=mq[m.key]; if(!q)return; for(const r in m.req) req[r]+=m.req[r]*q; });
+
+ const machCost=PACKAGES.reduce((s,p)=>s+pkg[p.key].mcost,0);
+ const crewCost=ROLES.reduce((s,r)=>s+CREW[r].cost*hire[r],0);
+ const cost=machCost+crewCost;
+ const people=ROLES.reduce((s,r)=>s+hire[r],0);
+
+ const shortfalls=ROLES.filter(r=>hire[r]<req[r]);
+ const overMarket=ROLES.filter(r=>hire[r]>CREW[r].max);
+ const crewOk=shortfalls.length===0 && overMarket.length===0;
+ const idle=ROLES.reduce((s,r)=>s+Math.max(0,hire[r]-req[r]),0);
+
+ let tc=0,tp=0,ts=0,te=0,ac=0;
+ Object.values(MACH).forEach(m=>{ const q=mq[m.key]; if(!q)return; const c=m.rate*q;
+   tc+=c; tp+=m.p*c; ts+=m.s*c; te+=m.e*c; if(m.type==="aut") ac+=c; });
+ const prod=tc?+(tp/tc).toFixed(1):0, safety=tc?+(ts/tc).toFixed(1):0, effort=tc?+(te/tc).toFixed(1):0;
+ const autoShare=tc?Math.round(ac/tc*100):0;
+
+ const duration=complete?+(PACKAGES.reduce((s,p)=>s+p.workload/pkg[p.key].cap,0)).toFixed(1):null;
+ const overBudget=cost>BUDGET;
+ const feasible=complete && crewOk && !overBudget;
+
+ const w=STRATS[strategy];
+ const perf=+(prod*w.p+safety*w.s+effort*w.e).toFixed(1);
+ const schedScore=complete?+clamp((70-duration)/25*100,0,100).toFixed(1):0;
+ const costScore=+clamp((BUDGET-cost)/300*100,0,100).toFixed(1);
+ const finalValue=feasible?+(0.30*schedScore+0.30*costScore+0.40*perf).toFixed(1):0;
+
+ return {pkg,complete,req,shortfalls,overMarket,crewOk,idle,machCost,crewCost,cost,people,
+   prod,safety,effort,autoShare,duration,overBudget,feasible,perf,schedScore,costScore,finalValue};
+}
+
+/* ===== RENDER ===== */
+function machCard(m){
+ const q=mq[m.key];
+ const reqList=Object.entries(m.req).map(([r,n])=>`${n} × ${r}`).join(" + ");
+ const ppl=Object.values(m.req).reduce((a,b)=>a+b,0);
+ return `<div class="mach ${m.type} ${q>0?'on':''}">
+   <div class="mh">
+     <span>${m.type==="aut"?"🤖":"👷"}</span>
+     <span style="color:${m.type==='aut'?'var(--auto)':'var(--brown)'}">${m.name}</span>
+     <span class="tag ${m.type}">${m.type==="aut"?"AUTONOMOUS":"MANUAL"}</span></div>
+   <div class="muted" style="font-size:12px;margin-top:5px">${m.note}</div>
+   <div class="specs"><span>Rate <b>${m.rate} ${MACH[m.key].pkg==="stl"?"t":"m³"}/d</b> per unit</span><span>Prod <b>${m.p}</b></span>
+     <span>Safety <b>${m.s}</b></span><span>Effort <b>${m.e}</b></span></div>
+   <div class="reqbox"><div class="cl">RESOURCE REQUIREMENT — ${ppl} PERSON${ppl>1?"S":""} PER UNIT</div>
+     <div class="rr">${reqList}</div></div>
+   <div class="costline">Machine cost <b>${m.cost} cr</b> / unit <span style="opacity:.7">(crew hired separately)</span></div>
+   <div class="stepper" style="margin-top:9px">
+     <button ${q<=0?"disabled":""} onclick="machStep('${m.key}',-1)">–</button>
+     <div class="q">${q}</div>
+     <button ${q>=MAXQ?"disabled":""} onclick="machStep('${m.key}',1)">+</button>
+     <span class="muted" style="margin-left:6px;font-size:11.5px">${q?`= ${m.rate*q} ${MACH[m.key].pkg==="stl"?"t":"m³"}/d · ${ppl*q} crew · ${m.cost*q} cr`:"none · max "+MAXQ}</span>
+   </div>
+ </div>`;
+}
+function renderPackages(m){
+ $("packages").innerHTML=PACKAGES.map(p=>{
+   const st=m.pkg[p.key], ok=st.cap>0;
+   return `<div class="wp" style="${!ok?'border-color:#5c2a2a':''}">
+     <div class="wphead"><div><div class="wptitle">${p.icon} ${p.name}</div><div class="muted">${p.desc}</div></div>
+       <div class="muted">Workload <b style="color:var(--ink)">${p.workload} ${p.unit}</b></div></div>
+     <div class="machines">${p.machines.map(machCard).join("")}</div>
+     <div class="wpstat">
+       <span>Capacity <b style="color:${ok?'var(--greenGlow)':'var(--red)'}">${st.cap} m³/d</b></span>
+       <span>Baseline <b style="color:var(--sub)">${BASE.dur[p.key]} d</b></span>
+       <span>Your plan <b>${ok?st.duration+" d":"—"}</b></span>
+       ${ok?`<span>Variance <b style="color:${st.duration<BASE.dur[p.key]?'var(--greenGlow)':st.duration>BASE.dur[p.key]?'var(--red)':'var(--sub)'}">${(st.duration-BASE.dur[p.key])>0?"+":""}${(st.duration-BASE.dur[p.key]).toFixed(1)} d</b></span>`:''}
+       <span>Machine cost <b style="color:var(--orange)">${st.mcost} cr</b></span>
+       ${!ok?'<span style="color:var(--red)">⛔ Select at least one machine</span>':''}
+     </div></div>`;
+ }).join("");
+}
+function renderCrew(m){
+ $("crewgrid").innerHTML=ROLES.map(r=>{
+   const need=m.req[r], have=hire[r], short=have<need, over=have>CREW[r].max;
+   return `<div class="crewcard ${short?'short':''}">
+     <div class="n">${r}</div>
+     <div class="sub2">${CREW[r].note} · ${CREW[r].cost} cr each · max ${CREW[r].max}</div>
+     <div class="stepper">
+       <button ${have<=0?"disabled":""} onclick="hireStep('${r}',-1)">–</button>
+       <div class="q">${have}</div>
+       <button ${have>=CREW[r].max?"disabled":""} onclick="hireStep('${r}',1)">+</button>
+     </div>
+     <div class="reqline" style="color:${short?'var(--red)':(have>need?'var(--yellow)':'var(--green)')}">
+       Required ${need} · Hired ${have} ${short?`· short ${need-have}`:(have>need?`· ${have-need} idle`:"· exact")}
+     </div>${over?'<div class="reqline" style="color:var(--red)">Exceeds availability</div>':''}
+   </div>`;
+ }).join("");
+
+ const el=$("resCheck");
+ if(!m.complete){ el.style.borderColor="var(--border)";
+   el.innerHTML='<b class="muted">RESOURCE CHECK — select machines first.</b>'; return; }
+ if(m.crewOk){
+   el.style.borderColor="var(--green)";
+   el.innerHTML=`<div style="color:var(--green);font-weight:900;font-size:16px">✅ RESOURCE CHECK: PASS</div>
+     <div class="muted" style="margin-top:4px">Crew hired covers all machine requirements${m.idle?` · <b style="color:var(--yellow)">${m.idle} idle worker${m.idle>1?"s":""} costing credits</b>`:" exactly — no waste."}</div>`;
+ }else{
+   el.style.borderColor="var(--red)";
+   const msg=m.shortfalls.length?`Short of: ${m.shortfalls.map(r=>`${m.req[r]-hire[r]} × ${r}`).join(", ")}`
+     :`Over availability: ${m.overMarket.join(", ")}`;
+   el.innerHTML=`<div style="color:var(--red);font-weight:900;font-size:16px">⛔ RESOURCE CHECK: FAIL</div>
+     <div class="muted" style="margin-top:4px">${msg}. Machines cannot run without their crew.</div>`;
+ }
+}
+function meter(l,v,c){return `<div class="meter"><div class="top"><div><div style="font-weight:700;font-size:12.5px">${l}</div>
+  <div class="muted" style="font-size:10.5px">Higher is better</div></div>
+  <div class="mv" style="color:${c}">${v}<span style="font-size:12px;color:var(--sub)">/100</span></div></div>
+  <div class="bar"><span style="width:${Math.min(v,100)}%;background:${c}"></span></div></div>`;}
+
+function renderStageTable(m){
+ const el=$("stageTable");
+ const head="<tr><th>Stage</th><th>Workload</th><th>Baseline</th><th>Your plan</th><th>Variance</th><th>Finishes day</th></tr>";
+ if(!m.complete){ el.innerHTML=head+`<tr><td colspan="6" class="muted">Select a machine in every stage to build the schedule.</td></tr>`; return; }
+ let cum=0, cumP=0, rows="";
+ PACKAGES.forEach(p=>{
+   const a=+(p.workload/m.pkg[p.key].cap).toFixed(1), pl=BASE.dur[p.key];
+   const v=+(a-pl).toFixed(1);
+   cum=+(cum+a).toFixed(1); cumP=+(cumP+pl).toFixed(1);
+   rows+=`<tr><td>${p.icon} ${p.name}</td><td>${p.workload} ${p.unit}</td>
+     <td style="color:var(--sub)">${pl} d</td>
+     <td><b>${a} d</b></td>
+     <td style="color:${v<0?'var(--greenGlow)':v>0?'var(--red)':'var(--sub)'}">${v>0?"+":""}${v} d</td>
+     <td style="color:${cum<=DEADLINE?'var(--green)':'var(--red)'}">${cum}</td></tr>`;
+ });
+ const tv=+(m.duration-BASE.duration).toFixed(1);
+ rows+=`<tr style="border-top:2px solid var(--border)"><td><b>TOTAL</b></td><td>${PACKAGES.reduce((s,p)=>s+p.workload,0)} units</td>
+   <td style="color:var(--sub)"><b>${BASE.duration} d</b></td>
+   <td><b style="color:${m.duration<=DEADLINE?'var(--green)':'var(--red)'}">${m.duration} d</b></td>
+   <td><b style="color:${tv<0?'var(--greenGlow)':'var(--red)'}">${tv>0?"+":""}${tv} d</b></td>
+   <td style="color:${m.duration<=DEADLINE?'var(--green)':'var(--red)'}">${m.duration<=DEADLINE?"✓ meets target":"✗ misses target"}</td></tr>`;
+ el.innerHTML=head+rows;
+}
+
+function renderGantt(m){
+ const el=$("gantt");
+ if(!m.complete){el.innerHTML='<div class="muted" style="margin-top:10px">Select a machine in every work package to generate the schedule.</div>';return;}
+ const D=m.duration,B=BASE.duration;
+ const axisMax=Math.max(Math.ceil(Math.max(D,B)),DEADLINE);
+ const pct=x=>x/axisMax*100;
+ const stepT=axisMax>40?10:5;
+ let ticks='',grid='';
+ for(let d=0;d<=axisMax;d+=stepT) ticks+=`<div class="gtick" style="left:${pct(d)}%">${d}</div>`;
+ for(let d=stepT;d<axisMax;d+=stepT) grid+=`<div class="ggrid" style="left:${pct(d)}%"></div>`;
+ const limit=`<div class="glimit" style="left:${pct(DEADLINE)}%"></div>`;
+ const colors={exc:"#c08a4a",fnd:"#39d353",con:"#7bd8ff",stl:"#a879ff"};
+ let cur=0,curB=0,rows="";
+ PACKAGES.forEach(p=>{
+   const d=+(p.workload/m.pkg[p.key].cap).toFixed(1), bd=BASE.dur[p.key];
+   rows+=`<div class="grow"><div class="glabel">${p.icon} ${p.name}</div>
+     <div class="gtrack">${grid}
+       <div class="gbar plan" style="left:${pct(cur)}%;width:${pct(d)}%;background:${colors[p.key]}">${d}d</div>
+       <div class="gbar base" style="left:${pct(curB)}%;width:${pct(bd)}%">${bd}d</div>
+       ${limit}</div></div>`;
+   cur+=d; curB+=bd;
+ });
+ const saved=+(B-D).toFixed(1);
+ el.innerHTML=`<div class="ginner">
+   <div class="grow" style="margin-top:12px"><div class="glabel muted" style="font-size:10.5px">DAY →</div>
+     <div class="gtrack" style="background:transparent;height:16px">${ticks}
+       <div class="glimit" style="left:${pct(DEADLINE)}%"></div></div></div>
+   ${rows}
+   <div class="grow"><div class="glabel"></div>
+     <div class="gtrack" style="background:transparent;height:18px">
+       <div style="position:absolute;left:${pct(DEADLINE)}%;transform:translateX(-50%);top:1px;font-size:10px;font-weight:800;color:var(--red);white-space:nowrap">▲ ${DEADLINE}-day client target</div>
+     </div></div></div>
+   <div class="muted" style="margin-top:12px">
+     Your completion: <b style="color:${D<=DEADLINE?'var(--green)':'var(--red)'}">${D} days</b> ·
+     Baseline: <b>69.1 days</b> ·
+     ${saved>0?`<b style="color:var(--greenGlow)">${saved} days ahead of baseline</b>`:`<b style="color:var(--red)">${Math.abs(saved)} days behind baseline</b>`}
+     · Sequence: Excavation → Foundation → Concrete → Steel Erection.</div>`;
+}
+
+function renderInsights(m){
+ const it=[];
+ PACKAGES.forEach(p=>{ if(m.pkg[p.key].cap<=0) it.push(["bad",`${p.name}: no machine selected — the project cannot run.`]); });
+ if(m.shortfalls.length) it.push(["bad",`Crew shortfall: ${m.shortfalls.map(r=>`${m.req[r]-hire[r]} × ${r}`).join(", ")}. Hire them or drop the machine.`]);
+ if(m.overBudget) it.push(["bad",`Over budget by ${m.cost-BUDGET} credits.`]);
+ if(m.idle>0) it.push(["warn",`${m.idle} idle worker${m.idle>1?"s":""} — costing ${ROLES.reduce((s,r)=>s+Math.max(0,hire[r]-m.req[r])*CREW[r].cost,0)} credits for no output.`]);
+ if(m.complete && m.duration>DEADLINE) it.push(["warn",`${m.duration} days — ${(m.duration-DEADLINE).toFixed(1)} past the 50-day client target. Add a machine to the slowest package.`]);
+ if(m.complete){ let slow=PACKAGES[0],sd=0;
+   PACKAGES.forEach(p=>{const d=p.workload/m.pkg[p.key].cap; if(d>sd){sd=d;slow=p;}});
+   it.push(["warn",`Critical package: ${slow.name} at ${sd.toFixed(1)} days — it drives the finish date.`]); }
+ if(m.feasible && m.finalValue>BASE.score)
+   it.push(["ok",`Beats the baseline: +${(m.finalValue-BASE.score).toFixed(1)} value, ${(BASE.duration-m.duration).toFixed(1)} days ahead of plan.`]);
+ if(m.feasible && !it.some(x=>x[0]==="bad")) it.push(["ok",`Feasible plan — Final Value ${m.finalValue}/100. Ready to submit.`]);
+ const cls={ok:"ok-i",warn:"warn-i",bad:"bad-i"},ic={ok:"✅",warn:"⚠️",bad:"⛔"};
+ $("insights").innerHTML=it.length?it.map(([t,x])=>`<li class="${cls[t]}">${ic[t]} <span style="color:var(--ink)">${x}</span></li>`).join("")
+   :'<li class="muted">Start by selecting machines.</li>';
+}
+
+function render(){
+ const m=compute();
+ $("strat").innerHTML=Object.keys(STRATS).map(s=>`<button class="stratbtn ${s===strategy?'on':''}" onclick="setStrat('${s}')">${s}</button>`).join("");
+ $("pools").innerHTML=`Budget <b style="color:${m.overBudget?'var(--red)':'var(--ink)'}">${m.cost}/${BUDGET} cr</b>
+   · Machines <b>${m.machCost}</b> + Crew <b>${m.crewCost}</b>`;
+ renderPackages(m); renderCrew(m);
+
+ $("sDur").textContent=m.complete?m.duration+" d":"–";
+ $("sDur").style.color=m.complete?(m.duration<=DEADLINE?'var(--green)':'var(--red)'):'var(--sub)';
+ $("sCost").textContent=m.cost+" cr"; $("sCost").style.color=m.overBudget?'var(--red)':'var(--orange)';
+ $("sPeople").textContent=m.people; $("sPeople").style.color=m.crewOk?'var(--blue)':'var(--red)';
+ $("sAuto").textContent=m.autoShare+"%"; $("sAuto").style.color='var(--auto)';
+
+ $("meters").innerHTML=[meter("PRODUCTIVITY",m.prod,"var(--amber)"),meter("OPERATIONAL SAFETY",m.safety,"var(--blue)"),
+   meter("MANUAL EFFORT REDUCTION",m.effort,"var(--greenGlow)"),meter("AUTOMATION SHARE",m.autoShare,"var(--auto)")].join("");
+
+ const fc=m.finalValue>=64?'var(--greenGlow)':m.finalValue>=52?'var(--yellow)':'var(--red)';
+ if(!m.feasible){
+   $("finalVal").innerHTML='<span style="font-size:32px;color:var(--red)">PLAN NOT FEASIBLE</span>';
+   $("finalBreak").textContent = !m.complete ? "Select a machine in every work package."
+     : !m.crewOk ? "Resource check failed — see Step 3." : `Over budget by ${m.cost-BUDGET} credits.`;
+   $("finalCard").style.borderColor='var(--red)'; $("subscores").innerHTML="";
+ }else{
+   $("finalVal").innerHTML=`${m.finalValue}<span style="font-size:24px;color:var(--sub)"> /100</span>`;
+   $("finalVal").style.color=fc; $("finalCard").style.borderColor=fc;
+   $("finalBreak").textContent=`30% schedule + 30% cost efficiency + 40% performance (${strategy} weighting)`;
+   const S=(l,v,c)=>`<div class="stat"><div class="sl">${l}</div><div class="sv" style="color:${c}">${v}</div></div>`;
+   $("subscores").innerHTML=S("Schedule score",m.schedScore,"var(--greenGlow)")+S("Cost score",m.costScore,"var(--orange)")+
+     S("Performance",m.perf,"var(--amber)")+S("Client target",m.duration<=DEADLINE?"✓ met":"✗ missed",m.duration<=DEADLINE?"var(--green)":"var(--red)");
+ }
+ $("vsBaseline").innerHTML = !m.complete ? "Build a full plan to compare against the baseline."
+   : `<b>vs Baseline:</b> value <b style="color:${m.finalValue>=BASE.score?'var(--greenGlow)':'var(--red)'}">${(m.finalValue-BASE.score>=0?"+":"")+(m.finalValue-BASE.score).toFixed(1)}</b>
+      · schedule <b style="color:${m.duration<=BASE.duration?'var(--greenGlow)':'var(--red)'}">${Math.abs(BASE.duration-m.duration).toFixed(1)} days ${m.duration<=BASE.duration?"ahead of plan":"behind plan"}</b>
+      · cost <b style="color:${m.cost<=BASE.cost?'var(--green)':'var(--orange)'}">${Math.abs(BASE.cost-m.cost)} cr ${m.cost<=BASE.cost?"cheaper":"more"}</b>`;
+ renderInsights(m); renderStageTable(m); renderGantt(m); renderMiniBar(m); renderProductivity(m);
+}
+
+/* Labour productivity + index comparison bars */
+function renderProductivity(m){
+ const lp = (m.complete && m.people>0) ? +(TOTAL_WORKLOAD/(m.duration*m.people)).toFixed(2) : null;
+ $("lpNow").textContent = lp!==null ? lp : "–";
+ $("lpNow").style.color = lp===null ? "var(--sub)" : (lp>=BASE.labour ? "var(--greenGlow)" : "var(--red)");
+ const mul = lp!==null ? +(lp/BASE.labour).toFixed(2) : null;
+ $("lpMul").textContent = mul!==null ? mul+"×" : "–";
+ $("lpMul").style.color = (mul!==null && mul>=1) ? "var(--greenGlow)" : "var(--red)";
+
+ const spi = m.complete ? +(BASE.duration/m.duration).toFixed(2) : null;
+ const cpi = (m.cost>0) ? +(BASE.cost/m.cost).toFixed(2) : null;
+ const cti = (spi!==null&&cpi!==null) ? +(spi*cpi).toFixed(2) : null;
+ $("spiV").textContent = spi!==null?spi.toFixed(2):"–";
+ $("spiV").style.color = spi!==null&&spi>=1?"var(--greenGlow)":"var(--red)";
+ $("cpiV").textContent = cpi!==null?cpi.toFixed(2):"–";
+ $("cpiV").style.color = cpi!==null&&cpi>=1?"var(--green)":"var(--orange)";
+ $("ctiV").textContent = cti!==null?cti.toFixed(2):"–";
+ $("ctiV").style.color = cti!==null&&cti>=1?"var(--greenGlow)":"var(--yellow)";
+ $("ctiNote").textContent = cti===null?"" : cti>=1
+   ? "Faster per credit than the baseline — time bought efficiently."
+   : "Schedule gain is costing more than baseline efficiency — check if the speed is worth it.";
+
+ const rows=[
+   ["Productivity index", BASE.prod,   m.prod,   "var(--amber)"],
+   ["Operational safety", BASE.safety, m.safety, "var(--blue)"],
+   ["Manual effort reduction", BASE.effort, m.effort, "var(--greenGlow)"],
+ ];
+ $("cmpBars").innerHTML = rows.map(([label,b,n,c])=>{
+   const d=+(n-b).toFixed(1);
+   const dc = d>0?"var(--greenGlow)":d<0?"var(--red)":"var(--sub)";
+   return `<div class="cmprow">
+     <div class="cmplab"><span>${label}</span>
+       <span><span style="color:var(--sub)">${b}</span> → <b>${n}</b>
+       <span class="delta" style="color:${dc}">${d>0?"+":""}${d}</span></span></div>
+     <div class="cmpbars">
+       <div class="cmpb base" style="width:${Math.min(b,100)}%"></div>
+       <div class="cmpb now" style="width:${Math.min(n,100)}%;background:${c}"></div>
+     </div></div>`;
+ }).join("");
+}
+
+function toggleDock(){
+ const d=$("ganttDock"), c=d.classList.toggle("collapsed");
+ $("dockBtn").textContent = c ? "▴ Show" : "▾ Hide";
+ document.body.style.paddingBottom = c ? "120px" : "";
+}
+
+function renderMiniBar(m){
+ const el=$("miniBar"); if(!el) return;
+ const fc=!m.feasible?'var(--red)':m.finalValue>=64?'var(--greenGlow)':m.finalValue>=52?'var(--yellow)':'var(--red)';
+ const dur=m.complete?m.duration+" d":"–";
+ const durC=m.complete?(m.duration<=DEADLINE?'var(--green)':'var(--red)'):'var(--sub)';
+ el.innerHTML=
+   `<div class="mb"><div class="mbl">Value</div><div class="mbv" style="color:${fc}">${m.feasible?m.finalValue:"—"}</div></div>`+
+   `<div class="mb"><div class="mbl">Days</div><div class="mbv" style="color:${durC}">${dur}</div></div>`+
+   `<div class="mb"><div class="mbl">Credits</div><div class="mbv" style="color:${m.overBudget?'var(--red)':'var(--orange)'}">${m.cost}</div></div>`+
+   `<div class="mb"><div class="mbl">Crew</div><div class="mbv" style="color:${m.crewOk?'var(--blue)':'var(--red)'}">${m.people}</div></div>`;
+}
+
+/* ===== ACTIONS ===== */
+function machStep(k,d){ mq[k]=clamp(mq[k]+d,0,MAXQ); render(); }
+function hireStep(r,d){ hire[r]=clamp(hire[r]+d,0,CREW[r].max); render(); }
+function autoHire(){ const m=compute(); ROLES.forEach(r=>hire[r]=Math.min(m.req[r],CREW[r].max)); render(); }
+function setStrat(s){ strategy=s; render(); }
+function resetPlan(){ Object.keys(mq).forEach(k=>mq[k]=0); ROLES.forEach(r=>hire[r]=0); render(); }
+
+function joinTeam(){
+  const v=$("teamInput").value.trim();
+  if(v.length<2){$("gateErr").textContent="Please enter a team name (2+ characters).";return;}
+  teamName=v; teamSlug=slugify(v);
+  if(!teamSlug){$("gateErr").textContent="Use letters or numbers.";return;}
+  $("teamBadge").textContent=teamName+" · "+session;
+  $("gate").classList.add("hide"); $("app").classList.remove("hide");
+  if(SB_ON){
+    $("storeBanner").innerHTML='<div class="banner" style="background:#0f2a16;border-color:#2e5c34;color:#8dff3a">🟢 Live multi-team sync is ON (Supabase, session "'+session+'"). All teams share one board.</div>';
+  }else if(!STORE){
+    $("storeBanner").innerHTML='<div class="banner">⚠️ Shared sync is OFF — results stay on this device. Add your Supabase URL + key in the CONFIG block at the top of this file to sync all teams onto one board.</div>';
+  }
+  const u=joinUrl(); if(u) $("qrurl").value=u;
+  $("miniBar").classList.remove("hide");
+  $("ganttDock").classList.remove("hide");
+  refreshMemberSelects();
+  render();
+}
+
+/* ===== SESSION + JOIN QR ===== */
+function setSession(){
+  const raw=$("sessInput").value.trim();
+  const s=slugifyCode(raw);
+  session = s || "workshop";
+  $("sessInput").value = session;
+  if(location.href.startsWith("http")){
+    try{ const u=new URL(location.href); u.searchParams.set("session",session);
+      history.replaceState(null,"",u.toString()); }catch(e){}
+  }
+  if(!$("gateQR").classList.contains("hide")) renderGateQR();
+}
+function toggleGateQR(){
+  const box=$("gateQR"), hidden=box.classList.contains("hide");
+  box.classList.toggle("hide");
+  $("qrToggle").textContent = hidden ? "Hide join QR" : "Show join QR";
+  if(hidden) renderGateQR();
+}
+function renderGateQR(){
+  const box=$("gateQR"); box.innerHTML="";
+  const url=joinUrl();
+  if(!url){
+    box.innerHTML=`<div class="qrhint">This page isn't published yet, so there's no link to encode.<br>
+      Host it (GitHub Pages, Netlify) and reopen — the QR will generate automatically.<br>
+      Session code: <b style="color:var(--navy)">${session}</b></div>`;
+    return;
+  }
+  if(typeof QRCode==="undefined"){
+    box.innerHTML='<div class="qrhint">QR library needs an internet connection.</div>'; return;
+  }
+  const card=document.createElement("div"); card.className="qrcard"; box.appendChild(card);
+  new QRCode(card,{text:url,width:190,height:190,colorDark:"#0a1747",colorLight:"#ffffff"});
+  const hint=document.createElement("div"); hint.className="qrhint";
+  hint.innerHTML=`Teams scan this to open the game and join session <b style="color:var(--navy)">${session}</b>.`;
+  box.appendChild(hint);
+  const btn=document.createElement("button"); btn.className="btn ghost sm"; btn.textContent="Copy join link";
+  btn.onclick=()=>{ try{ navigator.clipboard.writeText(url); btn.textContent="Copied ✓";
+    setTimeout(()=>btn.textContent="Copy join link",1500);}catch(e){ btn.textContent=url; } };
+  box.appendChild(btn);
+}
+function showBoardOnly(){ teamName="(spectator)"; teamSlug="";
+  $("teamBadge").textContent=teamName+" · "+session; $("gate").classList.add("hide"); $("app").classList.remove("hide");
+  const u=joinUrl(); if(u) $("qrurl").value=u;
+  showTab("board"); }
+function showTab(t){ const play=t==="play";
+  $("viewPlay").classList.toggle("hide",!play); $("viewBoard").classList.toggle("hide",play);
+  $("tabPlay").classList.toggle("on",play); $("tabBoard").classList.toggle("on",!play);
+  $("miniBar").classList.toggle("hide",!play || !teamSlug);
+  $("ganttDock").classList.toggle("hide",!play);
+  if(!play) loadBoard(); }
+
+async function submitPlan(){
+ const m=compute();
+ if(!m.feasible){$("submitMsg").innerHTML='<span style="color:var(--red)">Plan is not feasible — fix the issues above first.</span>';return;}
+ if(!teamSlug){$("submitMsg").innerHTML='<span style="color:var(--red)">Spectator mode — reload to enter a team name.</span>';return;}
+ $("submitMsg").textContent="Submitting…";
+ const rec={slug:teamSlug,name:teamName,score:m.finalValue,duration:m.duration,cost:m.cost,
+   people:m.people,autoshare:m.autoShare,strategy,ts:Date.now(),members:teamMembers().join(", ")};
+ const mode=await saveTeam(rec);
+ const note = mode==="shared" ? "" : mode==="private" ? " (saved to your account — shared board unavailable)" : " (saved on this device only)";
+ $("submitMsg").innerHTML=`<span style="color:var(--green)">✅ Submitted — ${m.finalValue}/100${note}. Open the Results Board.</span>`;
+ $("finalCard").animate([{transform:"scale(1)"},{transform:"scale(1.015)"},{transform:"scale(1)"}],{duration:300});
+}
+
+async function loadBoard(){
+ $("boardMsg").textContent="Loading…";
+ let rows=[]; try{ rows=await loadAll(); }catch(e){ rows=[]; }
+ rows.sort((a,b)=>b.score-a.score);
+ const n=rows.length;
+ $("stTeams").textContent=n||"0";
+ $("stBest").textContent=n?rows[0].score.toFixed(1):"–";
+ $("stAvg").textContent=n?(rows.reduce((s,r)=>s+r.score,0)/n).toFixed(1):"–";
+ $("stBeat").textContent=n?`${rows.filter(r=>r.score>BASE.score).length} / ${n}`:"–";
+ const head="<tr><th>Rank</th><th>Team</th><th>Members</th><th>Value</th><th>Days</th><th>Cost</th><th>Crew</th><th>Auto %</th><th>Priority</th></tr>";
+ const baseRow=`<tr style="opacity:.7"><td class="rank">—</td><td><i>Baseline plan</i></td><td class="muted">conventional method</td><td><b>44.4</b></td>
+   <td style="color:var(--red)">69.1</td><td>380</td><td>15</td><td>0%</td><td>—</td></tr>`;
+ if(!n){ $("board").innerHTML=head+baseRow; $("boardMsg").textContent="No team submissions yet."; return; }
+ $("board").innerHTML=head+rows.map((r,i)=>`<tr class="${r.slug===teamSlug?'you':''}">
+   <td class="rank">#${i+1}</td><td>${r.name}${r.slug===teamSlug?" (you)":""}</td>
+   <td class="muted" style="font-size:12px;max-width:220px">${r.members||"—"}</td>
+   <td><b style="color:${r.score>=64?'var(--greenGlow)':r.score>=52?'var(--yellow)':'var(--red)'}">${r.score.toFixed(1)}</b></td>
+   <td style="color:${r.duration<=DEADLINE?'var(--green)':'var(--red)'}">${r.duration}</td>
+   <td>${r.cost}</td><td>${r.people}</td><td style="color:var(--auto)">${r.autoshare}%</td><td>${r.strategy}</td></tr>`).join("")+baseRow;
+ $("boardMsg").textContent=`${n} team${n>1?"s":""} submitted · session "${session}" · storage: ${storeMode}.`;
+}
+
+function makeQR(){
+ const url=$("qrurl").value.trim(), box=$("qrbox"); box.innerHTML="";
+ if(!url){box.innerHTML='<div class="muted">Enter your published URL first.</div>';return;}
+ if(typeof QRCode==="undefined"){box.innerHTML='<div class="muted">QR library needs an internet connection.</div>';return;}
+ const h=document.createElement("div"); h.style.cssText="background:#fff;padding:12px;border-radius:12px"; box.appendChild(h);
+ new QRCode(h,{text:url,width:200,height:200,colorDark:"#0a1747",colorLight:"#ffffff"});
+ const a=document.createElement("a"); a.textContent="Open link ↗"; a.href=url; a.target="_blank";
+ a.style.cssText="color:var(--navy);font-weight:700;text-decoration:none"; box.appendChild(a);
+}
+
+/* Init: reflect session code in the gate field; auto-open the QR when the page is hosted.
+   Wrapped so a QR/URL failure can never prevent the gate from showing. */
+try{
+  $("sessInput").value = session;
+  if(joinUrl()) toggleGateQR();
+}catch(err){ console.warn("Init skipped:", err); }
+</script>
+</body>
+</html>
