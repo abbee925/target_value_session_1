@@ -1106,7 +1106,7 @@ function showTab(t){ const play=t==="play";
   $("tabPlay").classList.toggle("on",play); $("tabBoard").classList.toggle("on",!play);
   $("miniBar").classList.toggle("hide",!play || !teamSlug);
   $("ganttDock").classList.toggle("hide",!play);
-  if(!play) loadBoard(); }
+  if(!play) loadBoard(); if(window.__boardTimer){clearInterval(window.__boardTimer);window.__boardTimer=null;} if(!play){window.__boardTimer=setInterval(()=>{ if(!$("viewBoard").classList.contains("hide")) loadBoard(); },10000);} }
 
 async function submitPlan(){
  const m=compute();
@@ -1116,7 +1116,7 @@ async function submitPlan(){
  const rec={slug:teamSlug,name:teamName,score:m.finalValue,duration:m.duration,cost:m.cost,
    people:m.people,autoshare:m.autoShare,strategy,ts:Date.now(),members:teamMembers().join(", ")};
  const mode=await saveTeam(rec);
- const note = mode==="shared" ? "" : mode==="private" ? " (saved to your account — shared board unavailable)" : " (saved on this device only)";
+ const note = (mode==="supabase"||mode==="shared") ? "" : mode==="private" ? " (saved to your account — shared board unavailable)" : " (saved on this device only)";
  $("submitMsg").innerHTML=`<span style="color:var(--green)">✅ Submitted — ${m.finalValue}/100${note}. Open the Results Board.</span>`;
  $("finalCard").animate([{transform:"scale(1)"},{transform:"scale(1.015)"},{transform:"scale(1)"}],{duration:300});
 }
